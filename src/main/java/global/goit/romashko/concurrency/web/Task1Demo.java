@@ -10,7 +10,7 @@ import java.util.List;
 public class Task1Demo {
 
     private final static String BASE_URL = "https://jsonplaceholder.typicode.com/";
-    private final static String USERS_URL = BASE_URL + "users/";
+    private final static String USERS_URL = BASE_URL + "users";
 
     public static void main(String[] args) throws IOException, InterruptedException {
         List<User> serverUserList = HttpUtil.getAllUsers(URI.create(BASE_URL + "users"));
