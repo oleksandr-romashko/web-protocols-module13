@@ -1,6 +1,8 @@
 package global.goit.romashko.concurrency.web.util;
 
 import com.google.gson.Gson;
+import global.goit.romashko.concurrency.web.comment.Comment;
+import global.goit.romashko.concurrency.web.post.Post;
 import global.goit.romashko.concurrency.web.user.User;
 
 import java.io.IOException;
@@ -38,14 +40,19 @@ public class HttpUtil {
         return response.statusCode();
     }
 
-    public static User getUserById(URI uri, String userId) throws IOException, InterruptedException {
+    public static User getUserById(URI uri, String userId) {
         HttpRequest request = HttpRequest.newBuilder()
                 .uri(URI.create(uri + "/" + userId))
                 .GET()
                 .header("Content-type", "application/json; charset=UTF-8")
                 .build();
 
-        final HttpResponse<String> response = HTTP_CLIENT.send(request, HttpResponse.BodyHandlers.ofString());
+        final HttpResponse<String> response;
+        try {
+            response = HTTP_CLIENT.send(request, HttpResponse.BodyHandlers.ofString());
+        } catch (IOException | InterruptedException e) {
+            throw new RuntimeException("Exception while getting User by ID" + e);
+        }
         return GSON.fromJson(response.body(), User.class);
     }
 
@@ -96,5 +103,32 @@ public class HttpUtil {
 
         final HttpResponse<String> response = HTTP_CLIENT.send(request, HttpResponse.BodyHandlers.ofString());
         return response.statusCode();
+    }
+
+    public static List<Post> getLatestPostsByUser(URI usersUri, String userId) throws IOException, InterruptedException {
+        final URI path = URI.create(usersUri + "/" + userId + "/posts");
+
+        HttpRequest request = HttpRequest.newBuilder()
+                .uri(path)
+                .GET()
+                .header("Content-type", "application/json; charset=UTF-8")
+                .build();
+
+        final HttpResponse<String> response = HTTP_CLIENT.send(request, HttpResponse.BodyHandlers.ofString());
+
+        return List.of(GSON.fromJson(response.body(), Post[].class));
+    }
+
+    public static List<Comment> getCommentsByPostId(URI postsUri, int postId) throws IOException, InterruptedException {
+        URI uriById = URI.create(postsUri + "/" + postId + "/comments");
+        HttpRequest request = HttpRequest.newBuilder()
+                .uri(uriById)
+                .GET()
+                .header("Content-type", "application/json; charset=UTF-8")
+                .build();
+
+        final HttpResponse<String> response = HTTP_CLIENT.send(request, HttpResponse.BodyHandlers.ofString());
+
+        return List.of(GSON.fromJson(response.body(), Comment[].class));
     }
 }
