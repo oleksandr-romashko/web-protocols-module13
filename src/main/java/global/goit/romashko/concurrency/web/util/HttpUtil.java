@@ -3,6 +3,7 @@ package global.goit.romashko.concurrency.web.util;
 import com.google.gson.Gson;
 import global.goit.romashko.concurrency.web.comment.Comment;
 import global.goit.romashko.concurrency.web.post.Post;
+import global.goit.romashko.concurrency.web.task.Task;
 import global.goit.romashko.concurrency.web.user.User;
 
 import java.io.IOException;
@@ -130,5 +131,18 @@ public class HttpUtil {
         final HttpResponse<String> response = HTTP_CLIENT.send(request, HttpResponse.BodyHandlers.ofString());
 
         return List.of(GSON.fromJson(response.body(), Comment[].class));
+    }
+
+    public static List<Task> getTasksByUser(URI usersUri, User user) throws IOException, InterruptedException {
+        URI todosUri = URI.create(usersUri + "/" + user.getId() + "/todos");
+        HttpRequest request = HttpRequest.newBuilder()
+                .uri(URI.create(todosUri + "?completed=false"))
+                .GET()
+                .header("Content-type", "application/json; charset=UTF-8")
+                .build();
+
+        final HttpResponse<String> response = HTTP_CLIENT.send(request, HttpResponse.BodyHandlers.ofString());
+
+        return List.of(GSON.fromJson(response.body(), Task[].class));
     }
 }
